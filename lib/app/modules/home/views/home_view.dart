@@ -1,3 +1,4 @@
+import 'package:dropdown_search2/dropdown_search2.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -9,15 +10,19 @@ class HomeView extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('HomeView'),
+        title: Text('Kirim Duit Malaysia'),
         centerTitle: true,
       ),
-      body: Center(
-        child: Text(
-          'HomeView is working',
-          style: TextStyle(fontSize: 20),
-        ),
-      ),
+      body: ListView(padding: EdgeInsets.all(20), children: [
+        DropdownSearch<String>(
+            mode: Mode.DIALOG,
+            items: ["Brazil", "Italia (Disabled)", "Tunisia", 'Canada'],
+            label: "Menu mode",
+            hint: "country in menu mode",
+            onChanged: print,
+            showSearchBox: true,
+            selectedItem: "Brazil"),
+      ]),
     );
   }
 }
