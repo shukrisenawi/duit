@@ -43,7 +43,7 @@ class HomeView extends GetView<HomeController> {
               return List<Province>.empty();
             }
           },
-          onChanged: (value) => print(value),
+          onChanged: (value) => print(value!.province),
           popupItemBuilder: (context, item, isSelected) {
             return Container(
               padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
