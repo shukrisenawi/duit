@@ -1,11 +1,10 @@
-import 'dart:convert';
-
 import 'package:dropdown_search2/dropdown_search2.dart';
-import 'package:duit/app/modules/home/province_model.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter/material.dart';
 
+import 'widgets/city.dart';
+import 'widgets/berat.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'widgets/province.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -14,48 +13,64 @@ class HomeView extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Kirim Duit Malaysia'),
+        title: Text('Kirim Duit'),
         centerTitle: true,
+        backgroundColor: Colors.red[900],
       ),
-      body: ListView(padding: EdgeInsets.all(20), children: [
-        DropdownSearch<Province>(
-          label: "Provinsi",
-          showSearchBox: true,
-          onFind: (filter) async {
-            Uri url = Uri.parse('https://api.rajaongkir.com/starter/province');
-            try {
-              final response = await http.get(url, headers: {
-                "key": "0ae702200724a396a933fa0ca4171a7e",
-              });
-
-              var data = jsonDecode(response.body) as Map<String, dynamic>;
-
-              var statusCode = data['rajaongkir']['status']['code'];
-              if (statusCode != 200) {
-                throw data['rajaongkir']['status']['description'];
-              }
-
-              var listAllProvince =
-                  data['rajaongkir']['results'] as List<dynamic>;
-              var models = Province.fromJsonList(listAllProvince);
-              return models;
-            } catch (err) {
-              return List<Province>.empty();
-            }
-          },
-          onChanged: (value) => print(value!.province),
-          popupItemBuilder: (context, item, isSelected) {
-            return Container(
-              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-              child: Text(
-                "${item.province}",
-                style: TextStyle(fontSize: 18),
-              ),
-            );
-          },
-          itemAsString: (item) => item!.province!,
-        ),
-      ]),
+      body: SafeArea(
+        child: ListView(padding: EdgeInsets.all(20), children: [
+          Provinsi(tipe: 'asal'),
+          Obx(() => controller.hiddenKotaAsal.isTrue
+              ? SizedBox()
+              : Kota(provId: controller.provAsalId.value, tipe: 'asal')),
+          Provinsi(tipe: 'tujuan'),
+          Obx(() => controller.hiddenKotaTujuan.isTrue
+              ? SizedBox()
+              : Kota(provId: controller.provTujuanId.value, tipe: 'tujuan')),
+          BeratBarang(),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 50),
+            child: DropdownSearch<Map<String, dynamic>>(
+              mode: Mode.BOTTOM_SHEET,
+              items: [
+                {"code": "jne", "name": "JNE"},
+                {"code": "tiki", "name": "Tiki"},
+                {"code": "pos", "name": "Pos"},
+              ],
+              popupItemBuilder: ((context, item, isSelected) => Container(
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      "${item['name']}",
+                      style: TextStyle(fontSize: 18, color: Colors.black),
+                    ),
+                  )),
+              showClearButton: true,
+              itemAsString: (item) => "${item!['name']}",
+              label: "Tipe Kurier",
+              hint: "pilih tipe kurier",
+              onChanged: (value) {
+                if (value != null) {
+                  controller.kurier.value = value['code'];
+                  controller.showButton();
+                } else {
+                  controller.hiddenButton.value = true;
+                  controller.kurier.value = "";
+                }
+                print(value);
+              },
+            ),
+          ),
+          Obx(() => controller.hiddenButton.isTrue
+              ? SizedBox()
+              : ElevatedButton(
+                  onPressed: () => controller.kirimDuit(),
+                  child: Text("CEK HARGA"),
+                  style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      backgroundColor: Colors.red[900]),
+                ))
+        ]),
+      ),
     );
   }
 }
